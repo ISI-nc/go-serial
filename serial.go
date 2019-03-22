@@ -5,6 +5,7 @@
 //
 
 package serial // import "go.bug.st/serial.v1"
+import "time"
 
 //go:generate go run $GOROOT/src/syscall/mksyscall_windows.go -output zsyscall_windows.go syscall_windows.go
 
@@ -19,6 +20,13 @@ type Port interface {
 	// The Read function blocks until (at least) one byte is received from
 	// the serial port or an error occurs.
 	Read(p []byte) (n int, err error)
+
+	// Stores data received from the serial port into the provided byte array
+	// buffer. The function returns the number of bytes read.
+	//
+	// The Read function blocks until timeout or (at least) one byte is
+	// received from the serial port or an error occurs.
+	ReadTimeout(p []byte, timeout time.Duration) (n int, err error)
 
 	// Send the content of the data byte array to the serial port.
 	// Returns the number of bytes written.

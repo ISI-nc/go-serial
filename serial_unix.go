@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 	"unsafe"
 
 	"golang.org/x/sys/unix"
@@ -53,6 +54,10 @@ func (port *unixPort) Close() error {
 }
 
 func (port *unixPort) Read(p []byte) (n int, err error) {
+	return port.ReadTimeout(p, -1)
+}
+
+func (port *unixPort) ReadTimeout(p []byte, timeout time.Duration) (n int, err error) {
 	port.closeLock.RLock()
 	defer port.closeLock.RUnlock()
 	if !port.opened {
@@ -60,7 +65,7 @@ func (port *unixPort) Read(p []byte) (n int, err error) {
 	}
 
 	fds := unixutils.NewFDSet(port.handle, port.closeSignal.ReadFD())
-	res, err := unixutils.Select(fds, nil, fds, -1)
+	res, err := unixutils.Select(fds, nil, fds, timeout)
 	if err != nil {
 		return 0, err
 	}
